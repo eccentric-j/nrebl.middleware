@@ -1,9 +1,17 @@
 {:paths ["resources" "src"]
- :deps {org.clojure/clojure {:mvn/version "RELEASE"}
-        nrepl/nrepl {:mvn/version "0.4.5"}}
+ :deps {org.clojure/clojure {:mvn/version "1.10.0-RC4"}}
 
  :aliases
- {:dev {:extra-deps {org.clojure/clojure {:mvn/version "1.10.0-RC3"}
-                     org.clojure/core.async {:mvn/version "0.4.490"}
-	             com.cognitect/rebl {:local/root "/Users/rick/Software/REBL-0.9.108/REBL-0.9.108.jar"}}}
+ {:rebl {:extra-deps {org.clojure/core.async {:mvn/version "0.4.490"}
+                      com.cognitect/rebl {:local/root "/Users/rick/Software/REBL-0.9.108/REBL-0.9.108.jar"}}}
+
+  :dev {:extra-deps {nrepl/nrepl {:mvn/version "0.4.5"}}}
+
+  ;; equivalent to clojure.contrib nrepl 0.2.13
+  :dev-old-nrepl {:extra-deps
+                  {org.clojure/tools.nrepl {:mvn/version "0.2.13"}}}
+
+  :jar {:extra-deps
+        {seancorfield/depstar {:mvn/version "0.1.5"}}
+        :main-opts ["-m" "hf.depstar.jar" "target/nrebl-middleware.jar"]}
   }}

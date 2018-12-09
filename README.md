@@ -28,6 +28,23 @@ tools.deps.
            }}}}
 ```
 
+## Leiningen Installation (not yet working)
+
+Add something like the following to your lein `profiles.clj`
+
+```
+ :nrebl {:repl-options {:nrepl-middleware [nrebl.middleware/wrap-nrebl]}
+         :dependencies [[rickmoynihan/nrebl.middleware "0.1.0-SNAPSHOT"]
+                        [org.clojure/core.async "0.4.490"]]
+
+         ;; Download REBL and add to :resource-paths
+         :resource-paths ["/Users/rick/Software/REBL-0.9.108/REBL-0.9.108.jar"]
+         :injections [(require '[cognitect.rebl :as rebl])]
+         }
+
+ :repl [:nrebl]
+```
+
 ## Usage
 
 ```

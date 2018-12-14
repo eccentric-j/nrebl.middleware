@@ -1,6 +1,5 @@
 (ns nrebl.middleware
-  (:require [clojure.datafy :refer [datafy]]
-            [cognitect.rebl :as rebl]))
+  (:require [clojure.datafy :refer [datafy]]))
 
   ;; Looks for legacy leiningen namespace and imports relevant resources
 (if (find-ns 'clojure.tools.nrepl)
@@ -13,7 +12,20 @@
       (import
        'nrepl.transport.Transport)))
 
-(defn send-to-rebl!
+(def rebl-exists?
+  (try
+    (require '[cognitect.rebl :as rebl])
+    true
+    (catch java.io.FileNotFoundException _
+        false)))
+
+;; Ensure cognitect.rebl namespace exists
+(when-not rebl-exists?
+  (create-ns 'rebl)
+  (intern 'rebl 'submit identity)
+  (intern 'rebl 'ui identity))
+
+(defn send-to-rebl! [{:keys [code] :as req} {:keys [value] :as resp}]
   "Displays evaluated code in REBL results.
   Takes a nrepl middleware request map and a response map.
   Returns a nrepl middleware response"
@@ -36,16 +48,21 @@
              (send-to-rebl! request resp))
       this)))
 
-(defn wrap-nrebl [handler]
+(defn wrap-nrebl
   "nREPL middleware wrapper.
   Takes the next middleware handler function.
   Returns a middlware handler function.
   See https://nrepl.xyz/nrepl/design/middleware.html for more."
-  (fn [{:keys [id op transport] :as request}]
-    ;; Using case so that it's easier to add\remove ops later
-    (case op
-      "start-rebl-ui" (rebl/ui)
-      (handler (assoc request :transport (wrap-rebl-sender request))))))
+  [handler]
+  (if rebl-exists?
+    (fn [{:keys [id op transport] :as request}]
+      ;; Using case so that it's easier to add\remove ops later
+      (case op
+        "start-rebl-ui" (rebl/ui)
+        (handler (assoc request :transport (wrap-rebl-sender request)))))
+    (do
+      (println "WARNING: cognitect.rebl namespace was not found on classpath. nrebl.middlware could not be started.")
+      handler)))
 
 (set-descriptor! #'wrap-nrebl
                  {:requires #{}
